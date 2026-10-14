@@ -188,7 +188,20 @@ function main(): void {
     if (text.length > 200_000) void actions.loadDocAsync(name, text);
     else actions.loadDoc(name, text);
   };
-  void actions.loadDoc(fileIO.fileName, initial, true);
+
+  /** 外部来源（命令行/「打开方式」）加载文档：接管文件状态以便可回写 */
+  const openExternal = (name: string, text: string): void => {
+    setDirty(false);
+    fileIO.adopt(name);
+    if (text.length > 200_000) void actions.loadDocAsync(name, text);
+    else actions.loadDoc(name, text);
+  };
+  fileIO.onOpenFile((payload) => openExternal(payload.name, payload.content));
+  void (async () => {
+    const launch = await fileIO.getLaunchFile();
+    if (launch) openExternal(launch.name, launch.content);
+    else void actions.loadDoc(fileIO.fileName, initial, true);
+  })();
 
   // 菜单栏 / 工具栏 / 快捷键 / 右键菜单
   buildMenubar(menubarEl, (id) => actions.run(id));

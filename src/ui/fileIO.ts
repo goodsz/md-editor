@@ -19,6 +19,10 @@ export interface DesktopBridge {
   openFile(): Promise<{ name: string; content: string } | null>;
   saveFile(payload: { name: string; content: string }): Promise<{ name: string } | null>;
   saveFileAs(payload: { name: string; content: string }): Promise<{ name: string } | null>;
+  /** 启动时经命令行/「打开方式」传入的文档（无则 null） */
+  getLaunchFile(): Promise<{ name: string; content: string } | null>;
+  /** 订阅运行中经「打开方式」推送的文档 */
+  onOpenFile(cb: (payload: { name: string; content: string }) => void): void;
   /** 开始 PDF 导出：弹保存对话框并创建临时 HTML 写入流；取消返回 null */
   pdfExportBegin(payload: { name: string }): Promise<{ id: string } | null>;
   /** 追加一段打印 HTML 到临时文件（流式写入，避免一次性大字符串） */
@@ -99,6 +103,16 @@ export class FileIO {
   /** 桌面桥（主进程菜单订阅用）；浏览器为 null */
   getBridge(): DesktopBridge | null {
     return this.desktop;
+  }
+
+  /** 桌面端：启动时经命令行/「打开方式」传入的文档（无则 null） */
+  getLaunchFile(): Promise<{ name: string; content: string } | null> {
+    return this.desktop ? this.desktop.getLaunchFile() : Promise.resolve(null);
+  }
+
+  /** 桌面端：订阅运行中经「打开方式」推送的文档 */
+  onOpenFile(cb: (payload: { name: string; content: string }) => void): void {
+    this.desktop?.onOpenFile(cb);
   }
 
   /** 打开对话框 */

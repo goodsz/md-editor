@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog, Menu, nativeTheme, shell } = require('electron');
 const fs = require('fs/promises');
-const { createWriteStream } = require('fs');
+const { createWriteStream, existsSync, readFileSync } = require('fs');
 const path = require('path');
 
 const DEV_URL = 'http://localhost:5173/';
@@ -13,6 +13,15 @@ let dirty = false; // 渲染层经 desktop:setDirty 同步（关闭确认依据�
 let forceClose = false; // 已确认关闭（不保存/已保存）后放行
 let waitingSaveResult = false; // 已请求渲染层保存，等待回报
 let currentName = '未命名.md';
+let pendingLaunch = null; // 启动时经命令行传入的文档（渲染层加载后经 IPC 取用）
+
+/** 从命令行参数提取待打开的文档路径（Windows「打开方式」/ 拖到图标上） */
+function extractOpenPath(argv) {
+  for (const a of argv.slice(1)) {
+    if (typeof a === 'string' && /\.(md|markdown|txt)$/i.test(a) && existsSync(a)) return a;
+  }
+  return null;
+}
 
 function setTitle(name) {
   currentName = name || '未命名.md';
@@ -155,6 +164,9 @@ function registerIpc() {
 
   ipcMain.handle('desktop:saveAs', (_e, payload) => saveAs(payload.name, payload.content));
 
+  // 「打开方式」/ 命令行传入的文档：渲染层启动后取用
+  ipcMain.handle('desktop:get-launch-file', () => pendingLaunch);
+
   // PDF 导出（方案 A 流式写入）：渲染层把自包含打印 HTML 分块送入临时文件，
   // 全部写入后由隐藏窗口 printToPDF（独立渲染进程，主窗口不冻结）。
   // 进行中的流：id → { ws, tmp, filePath }
@@ -267,18 +279,47 @@ function buildMenu() {
   Menu.setApplicationMenu(null);
 }
 
-app.whenReady().then(() => {
-  registerIpc();
-  buildMenu();
-  createWindow();
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+if (!app.requestSingleInstanceLock()) {
+  app.quit();
+} else {
+  // 再次启动（如对另一文档选「打开方式」）：聚焦窗口并推送待打开文档
+  app.on('second-instance', (_e, argv) => {
+    if (!win) return;
+    if (win.isMinimized()) win.restore();
+    win.focus();
+    const p = extractOpenPath(argv);
+    if (!p) return;
+    try {
+      win.webContents.send('desktop:open-file', {
+        name: path.basename(p),
+        content: readFileSync(p, 'utf-8'),
+      });
+    } catch {
+      // 读取失败忽略
+    }
   });
-});
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
-});
+  app.whenReady().then(() => {
+    const launchPath = extractOpenPath(process.argv);
+    if (launchPath) {
+      try {
+        pendingLaunch = { name: path.basename(launchPath), content: readFileSync(launchPath, 'utf-8') };
+      } catch {
+        pendingLaunch = null;
+      }
+    }
+    registerIpc();
+    buildMenu();
+    createWindow();
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    });
+  });
+
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') app.quit();
+  });
+}
 
 // 冒烟模式：渲染层加载完成后自动退出（CI / 脚本验证用）
 if (SMOKE) {

@@ -14,7 +14,7 @@
     "electron": "electron .",
     "electron:dev": "concurrently -k -s first \"npm:dev\" \"npm:electron\"",
     "electron:smoke": "npm run build && electron . --smoke",
-    "electron:build": "npm run build && electron-builder --win"
+    "electron:build": "npm run build && electron-builder --win --publish never && node scripts/pack-release.mjs"
   },
   "build": {
     "appId": "com.mdeditor.app",
@@ -27,15 +27,29 @@
       "electron/**"
     ],
     "win": {
-      "target": "nsis",
-      "icon": "electron/icon.png"
+      "target": [
+        "nsis",
+        "zip"
+      ],
+      "icon": "build/icon.png"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
+      "perMachine": true,
       "createDesktopShortcut": false,
       "createStartMenuShortcut": true
-    }
+    },
+    "fileAssociations": [
+      {
+        "ext": [
+          "md",
+          "markdown"
+        ],
+        "name": "md-editor",
+        "description": "Markdown 文档"
+      }
+    ]
   },
   "dependencies": {
     "highlight.js": "^11.12.0",

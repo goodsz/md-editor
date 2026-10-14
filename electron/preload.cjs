@@ -9,6 +9,10 @@ contextBridge.exposeInMainWorld('desktop', {
   openFile: () => ipcRenderer.invoke('desktop:open'),
   saveFile: (payload) => ipcRenderer.invoke('desktop:save', payload),
   saveFileAs: (payload) => ipcRenderer.invoke('desktop:saveAs', payload),
+  getLaunchFile: () => ipcRenderer.invoke('desktop:get-launch-file'),
+  onOpenFile: (cb) => {
+    ipcRenderer.on('desktop:open-file', (_e, payload) => cb(payload));
+  },
   pdfExportBegin: (payload) => ipcRenderer.invoke('desktop:export-pdf-begin', payload),
   pdfExportChunk: (id, chunk) => ipcRenderer.invoke('desktop:export-pdf-chunk', { id, chunk }),
   pdfExportEnd: (id) => ipcRenderer.invoke('desktop:export-pdf-end', { id }),
