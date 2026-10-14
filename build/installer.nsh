@@ -52,8 +52,14 @@ FunctionEnd
     CreateShortCut "$newDesktopLink" "$appExe" "" "$appExe" 0
     ClearErrors
     WinShell::SetLnkAUMI "$newDesktopLink" "${APP_ID}"
-    System::Call 'Shell32::SHChangeNotify(i 0x8000000, i 0, i 0, i 0)'
   ${EndIf}
+  ; 强制 Shell 重绘桌面图标（覆盖安装时 exe 路径未变，Explorer 会沿用旧图标缓存位图）：
+  ; 1) SHCNE_ASSOCCHANGED：通知文件关联变更，触发 Explorer 全局刷新图标缓存
+  ; 2) SHCNE_UPDATEITEM：通知桌面快捷方式自身立即更新图标（0x2005 = SHCNF_PATHW|SHCNF_FLUSHNOWAIT）
+  ; 3) SHCNE_UPDATEDIR：通知桌面目录整体重绘
+  System::Call 'Shell32::SHChangeNotify(i 0x08000000, i 0, p 0, p 0)'
+  System::Call 'Shell32::SHChangeNotify(i 0x00002000, i 0x2005, w "$newDesktopLink", p 0)'
+  System::Call 'Shell32::SHChangeNotify(i 0x00001000, i 0x2005, w "$DESKTOP", p 0)'
 !macroend
 
 !endif ; !ifndef BUILD_UNINSTALLER
