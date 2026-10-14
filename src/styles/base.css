@@ -1,0 +1,156 @@
+/* 基础布局：块级元素与编辑区骨架 */
+
+.md-editor-root {
+  width: 100%;
+  max-width: min(1080px, 96%);
+  margin: 0 auto;
+  padding: 40px clamp(28px, 5vw, 72px);
+  box-sizing: border-box;
+  outline: none;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.md-editor-root [data-block-id] {
+  position: relative;
+}
+
+/* 虚拟化占位符：不响应鼠标（防止误选区落在未渲染块上） */
+.md-spacer {
+  pointer-events: none;
+}
+
+/* 可编辑块统一 pre-wrap：软换行（\n 文本节点）可见 */
+.md-paragraph,
+.md-heading,
+.md-item-text,
+.md-math,
+.md-code {
+  white-space: pre-wrap;
+  word-break: break-word;
+  outline: none;
+}
+
+.md-block {
+  margin: 0 0 0.6em;
+}
+
+/* 列表 */
+.md-list {
+  margin: 0 0 0.6em;
+  padding-left: 1.6em;
+}
+.md-list-item .md-item-text {
+  display: inline;
+}
+.md-task-check {
+  vertical-align: middle;
+  margin: 0 0.55em 0 0.1em;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* 引用块 */
+.md-quote {
+  margin: 0 0 0.6em;
+  padding: 0.2em 1em;
+}
+
+/* 代码块 */
+.md-code-block {
+  margin: 0 0 0.8em;
+  padding: 12px 16px;
+  overflow-x: auto;
+}
+.md-code {
+  display: block;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.9em;
+  line-height: 1.6;
+}
+
+/* 行内代码 */
+.md-inline-code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.88em;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+
+/* 数学块（双态：非激活显 KaTeX 渲染，激活显 $$ 源码） */
+.md-math {
+  padding: 8px 12px;
+}
+.md-math .md-math-src {
+  display: none;
+}
+.md-math .md-math-render {
+  display: block;
+}
+.md-editor-root .block-active .md-math-src {
+  display: inline;
+}
+.md-editor-root .block-active .md-math-render {
+  display: none;
+}
+.md-math-render {
+  overflow-x: auto;
+}
+.md-math-error {
+  color: #cf222e;
+  font-size: 0.9em;
+}
+
+/* mermaid 代码块（双态：非激活显图表，激活显源码） */
+.md-mermaid .md-code {
+  display: none;
+}
+.md-mermaid .md-mermaid-render {
+  display: block;
+  padding: 8px;
+  text-align: center;
+  overflow-x: auto;
+}
+.md-editor-root .block-active.md-mermaid .md-code {
+  display: block;
+}
+.md-editor-root .block-active.md-mermaid .md-mermaid-render {
+  display: none;
+}
+.md-mermaid-render svg {
+  max-width: 100%;
+  height: auto;
+}
+.md-mermaid-error {
+  color: #cf222e;
+  font-size: 0.9em;
+}
+
+/* HTML 块（M1 文本形态） */
+.md-html-block {
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 0.85em;
+  padding: 8px 12px;
+  white-space: pre-wrap;
+}
+
+/* 表格 */
+.md-table {
+  border-collapse: collapse;
+  margin: 0 0 0.8em;
+}
+.md-table th,
+.md-table td {
+  padding: 6px 13px;
+}
+
+/* 行内图片 */
+.md-inline-img {
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+/* 链接 */
+a[data-inline='link'] {
+  cursor: pointer;
+}

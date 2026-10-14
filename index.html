@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="./icon.png" />
+    <title>未命名.md - md-editor</title>
+  </head>
+  <body>
+    <div id="app">
+      <header id="titlebar">
+        <div id="menubar"></div>
+        <button id="mode-btn" type="button" title="切换源码模式 (Ctrl+/)">源码模式</button>
+      </header>
+      <div id="toolbar"></div>
+      <main id="workspace">
+        <aside id="outline" hidden></aside>
+        <div id="outline-resizer" title="拖动调整大纲宽度，双击复位"></div>
+        <div id="editor-pane">
+          <div id="editor-root" class="md-editor"></div>
+          <textarea id="source-editor" class="source-editor" hidden spellcheck="false"></textarea>
+        </div>
+      </main>
+      <footer id="statusbar"></footer>
+    </div>
+    <input id="file-fallback" type="file" accept=".md,.markdown,.txt" hidden />
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

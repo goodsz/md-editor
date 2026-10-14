@@ -1,0 +1,35 @@
+/* 标记显隐规则（DEVELOPMENT.md 6.2）：
+   标记 span 常驻 DOM，仅用 CSS 控制显隐，不删除节点 */
+
+.md-token {
+  display: none;
+}
+
+/* 光标所在块显示标记 */
+.md-editor-root .block-active .md-token {
+  display: inline;
+}
+
+/* 编辑器整体失焦时强制隐藏标记：
+   block-active 可能因点击工具栏/大纲等场景残留，
+   否则未聚焦块也会显示 **** 等源码符号 */
+.md-editor-root:not(.editing-focus) .block-active .md-token {
+  display: none;
+}
+
+/* 光标贴着标记时显示（与 .block-active 等效场景的兜底） */
+.md-editor-root .md-token.focused {
+  display: inline;
+}
+
+/* 激活块内图片隐藏（显示源码） */
+.md-editor-root .block-active img.md-inline-img {
+  display: none;
+}
+
+/* 失焦时激活块图片恢复显示（标记已隐藏，避免图片位置空白） */
+.md-editor-root:not(.editing-focus) .block-active img.md-inline-img {
+  display: initial;
+}
+
+/* 非激活块内链接 url 段不显示（.md-token 已隐藏，双保险） */
